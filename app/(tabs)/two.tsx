@@ -1,9 +1,8 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
-import Button from '../../components/button';
-import ImageViewer from '../../components/imageViewer';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { analyzeImage, extractLastSerialNumber } from '../../libs/helper';
+import Button from '../../components/button';
 
 
 
