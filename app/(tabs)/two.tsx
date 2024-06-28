@@ -1,45 +1,61 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import Button from '../../components/button';
 import ImageViewer from '../../components/imageViewer';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import TextRecognition from 'react-native-text-recognition';
+import { analyzeImage, extractLastSerialNumber } from '../../libs/helper';
+
+
 
 export default function TabTwoScreen() {
     const [image, setImage] = useState<string | null>(null);
-    const [textRecognition, setTextRecognition] = useState<string[]>([]);
+    const [ textRecognition, setTextRecognition] = useState<string | null>(null)
+    const [ serialNumber, setSerialNumber ] = useState<string[]>([])
     const pickImage = async () => {
-        // No permissions request is necessary for launching the image library
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
+        try {
+            // No permissions request is necessary for launching the image library
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+            });
+            if (!result.canceled) {
+                setImage(result.assets[0].uri);
 
-        if (!result.canceled && result.assets[0].uri) {
-            try{
-                const file = result.assets[0].uri as string
-                setImage(file);
-                const output = await TextRecognition.recognize(file, {
-                    visionIgnoreThreshold: 0.5,
-                });
-                setTextRecognition(output)
-                console.log(output)
-                const INFLIGHT_IT = "Inflight IT";
-                // If match toast will appear 
-                const matchText = textRecognition.findIndex((item: string) => item?.match(INFLIGHT_IT));
-                console.log(matchText)
+                const response = await analyzeImage(result.assets[0].uri)
+                if (response.success) {
+                    setTextRecognition(response.data)
+                    const serialNumberOutput = extractLastSerialNumber(response.data);
+                    console.log(serialNumberOutput)
+                    console.log(textRecognition)
+                    if (serialNumberOutput.length == 0) {
+                        console.log("Please try again!")
+                    } else {
+                        setSerialNumber(serialNumberOutput)
+                        console.log('Serial Number:', serialNumber);
+                    }                
+                }
             }
-            catch(error){
-                console.log(error)
-            }
+        }catch (error) {
+            console.log(error)
         }
+  
     };
+
+
     return (
         <View className='flex-1 items-center justify-center'>
             <Button label="Choose a photo" theme='primary' onPress={pickImage} />
-            {image && <ImageViewer selectedImage={image} />}
+            {image && <Image source={{ uri: image }} className="w-[300px] h-[300px]" />}
+            { 
+                serialNumber?.length > 0 &&
+                (
+                    <Text className='my-8'>
+                        Serial Number - {serialNumber}
+                    </Text>
+                )
+            }
         </View>
     );
 }
