@@ -10,5 +10,5 @@
         "skipLibCheck": true,
         "noEmit": true
     },
-    "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "app.d.ts", "expo-env.d.ts", "app/(tabs)/index.tsx"]
+    "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "app.d.ts", "expo-env.d.ts", "app/home/one.tsx"]
 }
