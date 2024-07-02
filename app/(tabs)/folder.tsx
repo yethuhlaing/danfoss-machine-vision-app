@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React, { useState } from 'react'
 import * as FileSystem from 'expo-file-system'
 import * as ImagePicker from 'expo-image-picker';
@@ -41,10 +41,20 @@ export default function folder() {
 
     };
     return (
-        <TouchableOpacity onPress={__pickImage} className="w-32 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-            <Text className="text-white font-bold text-center">
-                Choose picture
-            </Text>
-        </TouchableOpacity>
+        <Text className='flex-1 bg-transparent'>
+            <TouchableOpacity onPress={__pickImage} className="w-32 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                <Text className="text-white font-bold text-center">
+                    Choose picture
+                </Text>
+            </TouchableOpacity>
+            {
+                lastSerialNumber?.length > 0 &&
+                    (
+                        <Text className='my-8'>
+                            Last serial Number - {lastSerialNumber}
+                        </Text>
+                    )
+            }
+        </Text>
     )
 }

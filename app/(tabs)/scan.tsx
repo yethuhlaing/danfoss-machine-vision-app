@@ -1,26 +1,12 @@
 import { CameraCapturedPicture, CameraPictureOptions, CameraView, FlashMode, useCameraPermissions, CameraType, Camera } from 'expo-camera';
-import { useRef, useState } from 'react';
-import { Alert, Button, Image, ImageBackground, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Button, Image, ImageBackground, Text, TouchableOpacity, View } from 'react-native';
 import { analyzeImage, extractLastSerialNumber } from '../../libs/helper';
 import { StatusBar } from 'expo-status-bar';
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system'
+import { useSQLiteContext } from 'expo-sqlite';
 
-const loadDatabase = async () => {
-    const dbName = "motor_database.db"
-    const dbAsset = require("@Assets/database/motor_database.db")  
-    const dbUri = Asset.fromModule(dbAsset).uri
-    const dbFilePath = `${FileSystem.documentDirectory}SQLite/${dbName}`
 
-    const fileInfo = await FileSystem.getInfoAsync(dbFilePath);
-    if (!fileInfo.exists) {
-        await FileSystem.makeDirectoryAsync(
-            `${FileSystem.documentDirectory}SQLite`,
-            { intermediates: true}
-        );
-        await FileSystem.downloadAsync(dbUri, dbFilePath)
-    }
-}
+
 
 export default function TabOneScreen() {
     const [facing, setFacing] = useState<CameraType>('back');
@@ -31,10 +17,11 @@ export default function TabOneScreen() {
     const [lastSerialNumber, setLasterialNumber] = useState<string[]>([])
 
 
-    const [startCamera, setStartCamera] = useState(false)
+    const [startCamera, setStartCamera] = useState(true)
     const [previewVisible, setPreviewVisible] = useState(false)
     const [flashMode, setFlashMode] = useState<FlashMode | undefined>('off')
- 
+
+    const db = useSQLiteContext()
     if (!permission) {
         // Camera permissions are still loading.
         return <View />;
@@ -50,17 +37,39 @@ export default function TabOneScreen() {
         );
     }
 
+    const getData = async() => {
+        try {
+            console.log(db)
+            const result = await db.getAllAsync(`SELECT * FROM test_results WHERE serial_number = (?)`, lastSerialNumber[0]);
+            if (result) {
+                console.log(result);
+            } else {
+                console.log(`No results found for serial number ${lastSerialNumber[0]}`);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+    const __searchSerialNumber = async () => {
+        try {
+            db.withTransactionAsync(async () => {
+                await getData()
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
     const __startCamera = async () => {
         setCapturedImage(undefined)
         setLasterialNumber([])
         const { status } = await Camera.requestCameraPermissionsAsync()
-        console.log(status)
         if (status === 'granted') {
             setStartCamera(true)
         } else {
             Alert.alert('Access denied')
         }
     }
+
     const __takePicture = async () => {
         setCapturedImage(undefined)
         setLasterialNumber([])
@@ -169,18 +178,33 @@ export default function TabOneScreen() {
                 </View>
             ) : (
                 <View className="flex-1 bg-white items-center space-y-5">
+                    <View className='flex flex-row space-x-5'>
                         <TouchableOpacity onPress={__startCamera} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-                        <Text className="text-white font-bold text-center">
-                            Take picture
-                        </Text>
-                    </TouchableOpacity>
+                            <Text className="text-white font-bold text-center">
+                                Scan Again
+                            </Text>
+                        </TouchableOpacity>
+                        {
+                            lastSerialNumber && (
+                                <TouchableOpacity onPress={__searchSerialNumber} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                                    <Text className="text-white font-bold text-center">
+                                        Search
+                                    </Text>
+                                </TouchableOpacity>
+                            )
+                        }
 
-                    {capturedImage && <Image source={{ uri: capturedImage?.uri }} className="my-8 w-[300px] h-[300px]" />}
+                    </View>
                     {
-                        lastSerialNumber?.length > 0 &&
+                        lastSerialNumber?.length > 0 ?
                         (
                             <Text className='my-8'>
                                 Last serial Number - {lastSerialNumber}
+                            </Text>
+                        ) : (
+                            <Text>
+                                {capturedImage && <Image source={{ uri: capturedImage?.uri }} className="my-8 w-[300px] h-[300px]" />}
+                                The Serial Number is captured in the photo. Please Try again!
                             </Text>
                         )
                     }

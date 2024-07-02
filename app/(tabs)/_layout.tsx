@@ -16,12 +16,19 @@ export default function TabLayout() {
     
     return (
         <Tabs>
-
             <Tabs.Screen
                 name="home"
                 options={{
                     tabBarIcon: ({ color }) => (
                         <TabBarIcon name="home" color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="search"
+                options={{
+                    tabBarIcon: ({ color }) => (
+                        <TabBarIcon name="search" color={color} />
                     ),
                 }}
             />
