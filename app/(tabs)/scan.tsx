@@ -1,12 +1,14 @@
 import { CameraCapturedPicture, CameraPictureOptions, CameraView, FlashMode, useCameraPermissions, CameraType, Camera } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Button, Image, ImageBackground, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Button, Image, ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { analyzeImage, extractLastSerialNumber } from '../../libs/helper';
 import { StatusBar } from 'expo-status-bar';
+import Card from 'components/Card';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
-
-
-
 
 export default function TabOneScreen() {
     const [facing, setFacing] = useState<CameraType>('back');
@@ -16,12 +18,10 @@ export default function TabOneScreen() {
     const [textRecognition, setTextRecognition] = useState<string | null>(null)
     const [lastSerialNumber, setLasterialNumber] = useState<string[]>([])
 
-
     const [startCamera, setStartCamera] = useState(true)
     const [previewVisible, setPreviewVisible] = useState(false)
     const [flashMode, setFlashMode] = useState<FlashMode | undefined>('off')
 
-    const db = useSQLiteContext()
     if (!permission) {
         // Camera permissions are still loading.
         return <View />;
@@ -37,28 +37,8 @@ export default function TabOneScreen() {
         );
     }
 
-    const getData = async() => {
-        try {
-            console.log(db)
-            const result = await db.getAllAsync(`SELECT * FROM test_results WHERE serial_number = (?)`, lastSerialNumber[0]);
-            if (result) {
-                console.log(result);
-            } else {
-                console.log(`No results found for serial number ${lastSerialNumber[0]}`);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
-    const __searchSerialNumber = async () => {
-        try {
-            db.withTransactionAsync(async () => {
-                await getData()
-            })
-        } catch (error) {
-            console.log(error)
-        }
-    }
+
+
     const __startCamera = async () => {
         setCapturedImage(undefined)
         setLasterialNumber([])
@@ -140,78 +120,22 @@ export default function TabOneScreen() {
                         <CameraPreview photo={capturedImage} choosePicture={__choosePicture} retakePicture={__retakePicture} />
                     ) : (
                         <CameraView facing={facing} flash={flashMode} ref={cameraRef} className='flex-1'>
-                            <View className="flex-1 w-full bg-transparent flex-row">
-                                <View className="absolute left-5 top-10 flex-col justify-between">
-                                    <TouchableOpacity onPress={__handleFlashMode}>
-                                        <Text className="text-lg">
-                                            ⚡️
-                                        </Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={__switchCamera}>
-                                        <Text className="text-lg">
-                                            {facing === 'front' ? '🤳' : '📷'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                        <TouchableOpacity onPress={__exitCamera}>
-                                            <Text className="text-lg">
-                                                Exit
-                                            </Text>
-                                        </TouchableOpacity>
-                                </View>
-                                <View className="absolute bottom-0 flex-row flex-1 w-full p-5 justify-between">
-                                    <View className="self-center flex-1 items-center">
-                                        <TouchableOpacity
-                                            onPress={__takePicture}
-                                            style={{
-                                                width: 70,
-                                                height: 70,
-                                                bottom: 0,
-                                                borderRadius: 50,
-                                                backgroundColor: '#fff'
-                                            }}
-                                        />
-                                    </View>
-                                </View>
-                            </View>
+                            <CameraScreen __handleFlashMode={__handleFlashMode} __switchCamera={__switchCamera} __exitCamera={__exitCamera} __takePicture={__takePicture} facing={facing} />
                         </CameraView>
                     )}
                 </View>
-            ) : (
-                <View className="flex-1 bg-white items-center space-y-5">
-                    <View className='flex flex-row space-x-5'>
-                        <TouchableOpacity onPress={__startCamera} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-                            <Text className="text-white font-bold text-center">
-                                Scan Again
-                            </Text>
-                        </TouchableOpacity>
-                        {
-                            lastSerialNumber && (
-                                <TouchableOpacity onPress={__searchSerialNumber} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-                                    <Text className="text-white font-bold text-center">
-                                        Search
-                                    </Text>
-                                </TouchableOpacity>
-                            )
-                        }
-
-                    </View>
-                    {
-                        lastSerialNumber?.length > 0 ?
-                        (
-                            <Text className='my-8'>
-                                Last serial Number - {lastSerialNumber}
-                            </Text>
-                        ) : (
-                            <Text>
-                                {capturedImage && <Image source={{ uri: capturedImage?.uri }} className="my-8 w-[300px] h-[300px]" />}
-                                The Serial Number is captured in the photo. Please Try again!
-                            </Text>
-                        )
-                    }
-                </View>
-            )}
-
-            <StatusBar style="auto" />
+            ) : 
+                (                    
+                    lastSerialNumber?.length ?
+                    (
+                        <ScanFound lastSerialNumber={lastSerialNumber} __startCamera={__startCamera} />
+                    ) :
+                    (
+                        <ScanNotFound capturedImage={capturedImage} __startCamera={__startCamera} />
+                    )
+                       
+                )
+            }
         </View>
     );
 }
@@ -236,6 +160,126 @@ const CameraPreview = ({ photo, retakePicture, choosePicture }: any) => {
                     </View>
                 </View>
             </ImageBackground>
+        </View>
+    )
+}
+const CameraScreen = ({ __handleFlashMode, __switchCamera, __exitCamera, __takePicture , facing} : any) => {
+    return (
+        <View className="flex-1 w-full bg-transparent flex-row">
+            <View className="absolute left-5 top-10 flex-col justify-between">
+                <TouchableOpacity onPress={__handleFlashMode}>
+                    <Text className="text-lg">
+                        ⚡️
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={__switchCamera}>
+                    <Text className="text-lg">
+                        {facing === 'front' ? '🤳' : '📷'}
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={__exitCamera}>
+                    <Text className="text-lg">
+                        Exit
+                    </Text>
+                </TouchableOpacity>
+            </View>
+            <View className="absolute bottom-0 flex-row flex-1 w-full p-5 justify-between">
+                <View className="self-center flex-1 items-center">
+                    <TouchableOpacity
+                        onPress={__takePicture}
+                        style={{
+                            width: 70,
+                            height: 70,
+                            bottom: 0,
+                            borderRadius: 50,
+                            backgroundColor: '#fff'
+                        }}
+                    />
+                </View>
+            </View>
+        </View>
+    )
+}
+
+function ScanFound({ lastSerialNumber, __startCamera }: any) {
+    const db = useSQLiteContext()
+
+    const [extractData, setExtractData] = useState({})
+    const getData = async () => {
+        try {
+            const result = await db.getFirstAsync(`SELECT * FROM test_results WHERE serial_number = (?)`, lastSerialNumber[0]);
+            if (result) {
+                setExtractData(result as any)
+            } else {
+                console.log(`No results found for serial number ${lastSerialNumber[0]}`);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    const __searchSerialNumber = async () => {
+        try {
+            db.withTransactionAsync(async () => {
+                await getData()
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    return (
+        <View className="flex-1 bg-white items-center space-y-5">
+            <View className='flex flex-row space-x-5'>
+                <TouchableOpacity onPress={__searchSerialNumber} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                    <Text className="text-white font-bold text-center">
+                        Search
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={__startCamera} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                    <View className='flex flex-row justify-center items-center space-x-2'>
+                        <Text className="text-white font-bold text-center">Back</Text>
+                        <AntDesign name="back" size={18} color="white" />
+                    </View>
+                </TouchableOpacity>
+            </View>
+            <View>
+                <Text className='text-center'>
+                    Last serial Number - {lastSerialNumber}
+                </Text>
+                <SafeAreaView>
+                    <ScrollView className='mb-30'>
+                        {Object.entries(extractData).map(([key, value]) => (
+                            <View key={key}>
+                                <Card>
+                                    <Text className='font-bold text-lg'>{key.replace(/_/g, ' ')}:</Text>
+                                    <Text className='text-sm'>{value?.toString()}</Text>
+                                </Card>
+                            </View>
+                        ))}
+                    </ScrollView>
+                </SafeAreaView>
+            </View>
+        </View>
+    )
+}
+
+function ScanNotFound({ capturedImage, __startCamera }: any) {
+    return (
+        <View className='flex-1 bg-white items-center space-y-5'>
+            <View className='flex flex-row space-x-5'>
+
+                <TouchableOpacity onPress={__startCamera} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                    <View className='flex flex-row justify-center items-center space-x-2'>
+                        <Text className="text-white font-bold text-center">Scan Again</Text>
+                        <Ionicons name="scan" size={18} color="white" />
+                    </View>
+                </TouchableOpacity>
+            </View>
+            {capturedImage && <Image source={{ uri: capturedImage?.uri }} className="w-screen h-[300px]" />}
+            <Text>
+                The Serial Number is not captured in the photo. Please Try again!
+            </Text>
         </View>
     )
 }
