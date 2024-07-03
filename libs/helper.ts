@@ -1,6 +1,7 @@
 import TextRecognition from 'react-native-text-recognition';
 import axios from 'axios'
 import * as FileSystem from 'expo-file-system';
+import { useSQLiteContext } from 'expo-sqlite';
 
 
 type ResponseType =
@@ -72,3 +73,22 @@ export const extractLastSerialNumber = (text: string | null): string[] => {
     console.log("Matchs", matches)
     return matches;
 };
+
+export const extractData = (db: any, lastSerialNumber: any, setValue: any)=> {
+    db.withTransactionAsync(async () => {
+        await getData()
+    }) 
+
+    const getData = async () => {
+        try {
+            const result = await db.getFirstAsync(`SELECT * FROM test_results WHERE serial_number = (?)`, lastSerialNumber[0]);
+            if (result) {
+                setValue(result)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+}

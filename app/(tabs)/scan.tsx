@@ -1,7 +1,7 @@
 import { CameraCapturedPicture, CameraPictureOptions, CameraView, FlashMode, useCameraPermissions, CameraType, Camera } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Button, Image, ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { analyzeImage, extractLastSerialNumber } from '../../libs/helper';
+import { analyzeImage, extractData, extractLastSerialNumber } from '../../libs/helper';
 import { StatusBar } from 'expo-status-bar';
 import Card from 'components/Card';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -202,45 +202,26 @@ const CameraScreen = ({ __handleFlashMode, __switchCamera, __exitCamera, __takeP
 }
 
 function ScanFound({ lastSerialNumber, __startCamera }: any) {
+    
+    const [generalResult, setGeneralResult] = useState({})
     const db = useSQLiteContext()
 
-    const [extractData, setExtractData] = useState({})
-    const getData = async () => {
-        try {
-            const result = await db.getFirstAsync(`SELECT * FROM test_results WHERE serial_number = (?)`, lastSerialNumber[0]);
-            if (result) {
-                setExtractData(result as any)
-            } else {
-                console.log(`No results found for serial number ${lastSerialNumber[0]}`);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
-
     const __searchSerialNumber = async () => {
-        try {
-            db.withTransactionAsync(async () => {
-                await getData()
-            })
-        } catch (error) {
-            console.log(error)
-        }
+        extractData(db, lastSerialNumber, setGeneralResult)
     }
     return (
         <View className="flex-1 bg-white items-center space-y-5">
             <View className='flex flex-row space-x-5'>
-                <TouchableOpacity onPress={__searchSerialNumber} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-                    <Text className="text-white font-bold text-center">
-                        Search
-                    </Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity onPress={__startCamera} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
                     <View className='flex flex-row justify-center items-center space-x-2'>
                         <Text className="text-white font-bold text-center">Back</Text>
                         <AntDesign name="back" size={18} color="white" />
                     </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={__searchSerialNumber} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                    <Text className="text-white font-bold text-center">
+                        Search
+                    </Text>
                 </TouchableOpacity>
             </View>
             <View>
@@ -249,7 +230,7 @@ function ScanFound({ lastSerialNumber, __startCamera }: any) {
                 </Text>
                 <SafeAreaView>
                     <ScrollView className='mb-30'>
-                        {Object.entries(extractData).map(([key, value]) => (
+                        {Object.entries(generalResult).map(([key, value]) => (
                             <View key={key}>
                                 <Card>
                                     <Text className='font-bold text-lg'>{key.replace(/_/g, ' ')}:</Text>

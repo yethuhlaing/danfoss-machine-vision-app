@@ -1,13 +1,18 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import * as FileSystem from 'expo-file-system'
 import * as ImagePicker from 'expo-image-picker';
-import { analyzeImage, extractLastSerialNumber } from '../../libs/helper';
+import { analyzeImage, extractData, extractLastSerialNumber } from '../../libs/helper';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Card from 'components/Card';
+import { useSQLiteContext } from 'expo-sqlite';
 
 export default function folder() {
     const [capturedImage, setCapturedImage] = useState< undefined | ImagePicker.ImagePickerAsset>(undefined)
     const [textRecognition, setTextRecognition] = useState<string | null>(null)
     const [lastSerialNumber, setLasterialNumber] = useState<string[]>([])
+    const [generalResult, setGeneralResult] = useState({})
+    const db = useSQLiteContext()
 
     const __pickImage = async () => {
         try {
@@ -26,7 +31,6 @@ export default function folder() {
                     setTextRecognition(response.data)
                     const serialNumberOutput = extractLastSerialNumber(response.data);
                     console.log(serialNumberOutput)
-                    console.log(textRecognition)
                     if (serialNumberOutput.length == 0) {
                         console.log("Please try again!")
                     } else {
@@ -40,21 +44,49 @@ export default function folder() {
         }
 
     };
+    const __searchSerialNumber = async () => {
+        extractData(db, lastSerialNumber, setGeneralResult)
+    }
     return (
-        <Text className='flex-1 bg-transparent'>
-            <TouchableOpacity onPress={__pickImage} className="w-32 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-                <Text className="text-white font-bold text-center">
-                    Choose picture
-                </Text>
-            </TouchableOpacity>
-            {
-                lastSerialNumber?.length > 0 &&
+        <SafeAreaView className='flex-1 items-center'>
+            <View className='flex flex-row space-x-5'>
+                <TouchableOpacity onPress={__pickImage} className="w-32 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                    <Text className="text-white font-bold text-center">
+                        Choose picture
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={__searchSerialNumber} className="w-32 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                    <Text className="text-white font-bold text-center">
+                        Search
+                    </Text>
+                </TouchableOpacity>
+            </View>
+            <View>
+                {
+                    lastSerialNumber?.length > 0 &&
                     (
-                        <Text className='my-8'>
-                            Last serial Number - {lastSerialNumber}
-                        </Text>
+                        <View>
+                            <Text className='text-center'>
+                                Last serial Number - {lastSerialNumber}
+                            </Text>
+                            <SafeAreaView>
+                                <ScrollView className='mb-30'>
+                                    {Object.entries(generalResult).map(([key, value]) => (
+                                        <View key={key}>
+                                            <Card>
+                                                <Text className='font-bold text-lg'>{key.replace(/_/g, ' ')}:</Text>
+                                                <Text className='text-sm'>{value?.toString()}</Text>
+                                            </Card>
+                                        </View>
+                                    ))}
+                                </ScrollView>
+                            </SafeAreaView>
+                        </View>
                     )
-            }
-        </Text>
+                }
+            </View>
+     
+            
+        </SafeAreaView>
     )
 }
