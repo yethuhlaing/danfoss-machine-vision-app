@@ -1,17 +1,18 @@
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ScrollView, ImageSourcePropType } from 'react-native'
 import React, { useState } from 'react'
-import * as FileSystem from 'expo-file-system'
 import * as ImagePicker from 'expo-image-picker';
-import { analyzeImage, extractData, extractLastSerialNumber } from '../../libs/helper';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { analyzeImage, capitalize, extractData, extractLastSerialNumber } from '../../libs/helper';
 import Card from 'components/Card';
 import { useSQLiteContext } from 'expo-sqlite';
+import { FontAwesome } from '@expo/vector-icons';
+import { keyIconMap } from 'constants/constant';
 
 export default function folder() {
     const [capturedImage, setCapturedImage] = useState< undefined | ImagePicker.ImagePickerAsset>(undefined)
     const [textRecognition, setTextRecognition] = useState<string | null>(null)
     const [lastSerialNumber, setLasterialNumber] = useState<string[]>([])
     const [generalResult, setGeneralResult] = useState({})
+    const [ error , setError ] = useState('')
     const db = useSQLiteContext()
 
     const __pickImage = async () => {
@@ -25,6 +26,7 @@ export default function folder() {
             });
             if (!result.canceled) {
                 setCapturedImage(result.assets[0]);
+                setGeneralResult({})
 
                 const response = await analyzeImage(result.assets[0].uri)
                 if (response.success) {
@@ -32,10 +34,10 @@ export default function folder() {
                     const serialNumberOutput = extractLastSerialNumber(response.data);
                     console.log(serialNumberOutput)
                     if (serialNumberOutput.length == 0) {
-                        console.log("Please try again!")
+                        setError("Serial number not Captured!")
                     } else {
                         setLasterialNumber(serialNumberOutput)
-                        console.log('Serial Number:', lastSerialNumber);
+                        setError("")
                     }
                 }
             }
@@ -45,48 +47,70 @@ export default function folder() {
 
     };
     const __searchSerialNumber = async () => {
-        extractData(db, lastSerialNumber, setGeneralResult)
+        extractData(db, lastSerialNumber[0], setGeneralResult)
     }
     return (
-        <SafeAreaView className='flex-1 items-center'>
-            <View className='flex flex-row space-x-5'>
-                <TouchableOpacity onPress={__pickImage} className="w-32 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-                    <Text className="text-white font-bold text-center">
-                        Choose picture
-                    </Text>
+        <View className='flex-1 bg-[#ffffff] items-center space-y-5 p-4'>
+            <View className='flex flex-row justify-center items-center gap-3'>
+                <TouchableOpacity onPress={__pickImage} className="flex-1 rounded bg-primary flex-row justify-center items-center h-10">
+
+                    <View className='flex flex-row justify-center items-center space-x-2'>
+                        <Text className="text-neutral-50 font-bold text-center">
+                            Import
+                        </Text>
+                        <FontAwesome name='file' size={16} color="white" />
+                    </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={__searchSerialNumber} className="w-32 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-                    <Text className="text-white font-bold text-center">
-                        Search
-                    </Text>
-                </TouchableOpacity>
-            </View>
-            <View>
                 {
-                    lastSerialNumber?.length > 0 &&
-                    (
-                        <View>
-                            <Text className='text-center'>
-                                Last serial Number - {lastSerialNumber}
-                            </Text>
-                            <SafeAreaView>
-                                <ScrollView className='mb-30'>
-                                    {Object.entries(generalResult).map(([key, value]) => (
-                                        <View key={key}>
-                                            <Card>
-                                                <Text className='font-bold text-lg'>{key.replace(/_/g, ' ')}:</Text>
-                                                <Text className='text-sm'>{value?.toString()}</Text>
-                                            </Card>
-                                        </View>
-                                    ))}
-                                </ScrollView>
-                            </SafeAreaView>
-                        </View>
+                    !error && lastSerialNumber?.length > 0 && (
+                        <TouchableOpacity onPress={__searchSerialNumber} className="flex-1 rounded bg-primary flex-row justify-center items-center h-10">
+                            <View className='flex flex-row justify-center items-center space-x-2'>
+                                <Text className="text-neutral-50 font-bold text-center">
+                                    Search
+                                </Text>
+                                <FontAwesome name='database' size={16} color="white" />
+                            </View>
+                        </TouchableOpacity>
                     )
                 }
             </View>
-     
+            {
+                error ? (
+                    <Text className="text-center text-primary p-3">
+                        {error}
+                    </Text>
+                ) : (
+                    <View>
+                        {
+                            lastSerialNumber?.length > 0 &&
+                            (
+                                <Text className="text-center text-[#15803d] p-3">
+                                    Last serial Number - {lastSerialNumber}
+                                </Text>
+                            )
+                        }
+                        <ScrollView className='w-screen'>
+                            {
+                                generalResult && Object.keys(generalResult).length > 0 && (
+                                    Object.entries(generalResult).map(([key, value]) => (
+                                        <View key={key}>
+                                            <Card>
+                                                <View className='flex-row items-center'>
+                                                    <FontAwesome name={keyIconMap[key] as any} size={20} style={{ marginRight: 10 }} color={"#ED1C24"} />
+                                                    <Text className='font-bold text-lg'>{capitalize(key.replace(/_/g, ' '))}</Text>
+                                                </View>
+                                                <Text className='text-sm p-2'>{value?.toString()}</Text>
+                                            </Card>
+                                        </View>
+                                    ))
+                                )
+                            }
+                        </ScrollView>
+                    </View>
+                )
+            }
+
             
-        </SafeAreaView>
+        </View>
     )
 }

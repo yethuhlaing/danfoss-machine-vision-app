@@ -1,16 +1,15 @@
 import { CameraCapturedPicture, CameraPictureOptions, CameraView, FlashMode, useCameraPermissions, CameraType, Camera } from 'expo-camera';
-import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Button, Image, ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { analyzeImage, extractData, extractLastSerialNumber } from '../../libs/helper';
-import { StatusBar } from 'expo-status-bar';
+import { useRef, useState } from 'react';
+import { Alert, Button, Image, ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { analyzeImage, capitalize, extractData, extractLastSerialNumber } from '../../libs/helper';
 import Card from 'components/Card';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
+import { Feather, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import { keyIconMap } from 'constants/constant';
 
-export default function TabOneScreen() {
+export default function ScanPage() {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const cameraRef = useRef<CameraView>(null);
@@ -72,7 +71,6 @@ export default function TabOneScreen() {
 
     }
     const __choosePicture = async () => { 
-
         const response = await analyzeImage(capturedImage?.uri)
         if (response.success) {
             setTextRecognition(response.data)
@@ -109,9 +107,6 @@ export default function TabOneScreen() {
             setFacing('back')
         }
     }
-    const __exitCamera = () =>{
-        setStartCamera(false)
-    }
     return (
         <View className="flex-1">
             {startCamera ? (
@@ -120,7 +115,7 @@ export default function TabOneScreen() {
                         <CameraPreview photo={capturedImage} choosePicture={__choosePicture} retakePicture={__retakePicture} />
                     ) : (
                         <CameraView facing={facing} flash={flashMode} ref={cameraRef} className='flex-1'>
-                            <CameraScreen __handleFlashMode={__handleFlashMode} __switchCamera={__switchCamera} __exitCamera={__exitCamera} __takePicture={__takePicture} facing={facing} />
+                            <CameraScreen __handleFlashMode={__handleFlashMode} __switchCamera={__switchCamera}  __takePicture={__takePicture} facing={facing} />
                         </CameraView>
                     )}
                 </View>
@@ -128,10 +123,10 @@ export default function TabOneScreen() {
                 (                    
                     lastSerialNumber?.length ?
                     (
-                        <ScanFound lastSerialNumber={lastSerialNumber} __startCamera={__startCamera} />
+                        <ScanFound lastSerialNumber={lastSerialNumber[0]} __startCamera={__startCamera} />
                     ) :
                     (
-                        <ScanNotFound capturedImage={capturedImage} __startCamera={__startCamera} />
+                        <ScanNotFound __startCamera={__startCamera} />
                     )
                        
                 )
@@ -145,17 +140,24 @@ const CameraPreview = ({ photo, retakePicture, choosePicture }: any) => {
     return (
         <View className="bg-transparent flex-1 w-full h-full">
             <ImageBackground source={{ uri: photo && photo.uri }} className="flex-1">
-                <View className="flex-1 flex-col p-4 justify-end">
-                    <View className="flex-row justify-between">
-                        <TouchableOpacity onPress={retakePicture} className="w-32 h-10 items-center rounded">
-                            <Text className="text-white text-lg">
-                                Re-take
-                            </Text>
+                <View className="flex-1 flex-col p-3 justify-end">
+                    <View className="flex-row justify-between gap-4">
+                        <TouchableOpacity onPress={retakePicture} className="flex-1 h-10 items-center rounded bg-primary justify-center">
+                            <View className='flex flex-row justify-center items-center space-x-2'>
+                                <Text className="text-neutral-50 text-lg">
+                                    Retake
+                                </Text>
+                                <FontAwesome name='retweet' size={24 } color="white" />
+                            </View>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={choosePicture} className="w-32 h-10 items-center rounded">
-                            <Text className="text-white text-lg">
-                                Choose
-                            </Text>
+                        <TouchableOpacity onPress={choosePicture} className="flex-1 h-10 items-center rounded bg-primary justify-center">
+
+                            <View className='flex flex-row justify-center items-center space-x-2'>
+                                <Text className="text-neutral-50 text-lg">
+                                     Choose
+                                </Text>
+                                <Feather name="arrow-right-circle" size={24} color="white" />
+                            </View>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -165,21 +167,16 @@ const CameraPreview = ({ photo, retakePicture, choosePicture }: any) => {
 }
 const CameraScreen = ({ __handleFlashMode, __switchCamera, __exitCamera, __takePicture , facing} : any) => {
     return (
-        <View className="flex-1 w-full bg-transparent flex-row">
-            <View className="absolute left-5 top-10 flex-col justify-between">
-                <TouchableOpacity onPress={__handleFlashMode}>
+        <View className="flex-1 w-full bg-transparent">
+            <View className="flex flex-row justify-between p-5">
+                <TouchableOpacity onPress={__handleFlashMode} className='h-10'>
                     <Text className="text-lg">
-                        ⚡️
+                        <FontAwesome name="bolt" size={30} color="white" />
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={__switchCamera}>
+                <TouchableOpacity onPress={__switchCamera} className='flex'>
                     <Text className="text-lg">
-                        {facing === 'front' ? '🤳' : '📷'}
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={__exitCamera}>
-                    <Text className="text-lg">
-                        Exit
+                        <FontAwesome6 name="camera-rotate" size={24} color="white" />                    
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -210,56 +207,65 @@ function ScanFound({ lastSerialNumber, __startCamera }: any) {
         extractData(db, lastSerialNumber, setGeneralResult)
     }
     return (
-        <View className="flex-1 bg-white items-center space-y-5">
-            <View className='flex flex-row space-x-5'>
-                <TouchableOpacity onPress={__startCamera} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+        <View className="bg-[#ffffff] items-center space-y-5 p-4">
+            <View className='flex flex-row space-x-3'>
+                <TouchableOpacity onPress={__startCamera} className="flex-1 rounded bg-primary flex-row justify-center items-center h-10">
                     <View className='flex flex-row justify-center items-center space-x-2'>
-                        <Text className="text-white font-bold text-center">Back</Text>
-                        <AntDesign name="back" size={18} color="white" />
+                        <Text className="text-neutral-50 font-bold text-center">Back</Text>
+                        <FontAwesome name='rotate-left' size={16} color="white" />
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={__searchSerialNumber} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
-                    <Text className="text-white font-bold text-center">
-                        Search
-                    </Text>
+                <TouchableOpacity onPress={__searchSerialNumber} className="flex-1 rounded bg-primary flex-row justify-center items-center h-10">
+
+                    <View className='flex flex-row justify-center items-center space-x-2'>
+                        <Text className="text-neutral-50 font-bold text-center">
+                            Search
+                        </Text>                        
+                        <FontAwesome name='database' size={16} color="white" />
+                    </View>
                 </TouchableOpacity>
             </View>
             <View>
-                <Text className='text-center'>
+                <Text className="text-center text-[#15803d] p-3">
                     Last serial Number - {lastSerialNumber}
                 </Text>
-                <SafeAreaView>
-                    <ScrollView className='mb-30'>
-                        {Object.entries(generalResult).map(([key, value]) => (
-                            <View key={key}>
-                                <Card>
-                                    <Text className='font-bold text-lg'>{key.replace(/_/g, ' ')}:</Text>
-                                    <Text className='text-sm'>{value?.toString()}</Text>
-                                </Card>
-                            </View>
-                        ))}
-                    </ScrollView>
-                </SafeAreaView>
+            
+  
+                <ScrollView className='w-screen mb-10'>
+                    {
+                        generalResult && Object.keys(generalResult).length > 0 && (
+                            Object.entries(generalResult).map(([key, value]) => (
+                                <View key={key}>
+                                    <Card>
+                                        <View className='flex-row items-center'>
+                                            <FontAwesome name={keyIconMap[key] as any} size={20} style={{ marginRight: 10 }} color={"#ED1C24"} />
+                                            <Text className='font-bold text-lg'>{capitalize(key.replace(/_/g, ' '))}</Text>
+                                        </View>
+                                        <Text className='text-sm p-2'>{value?.toString()}</Text>
+                                    </Card>
+                                </View>
+                            ))
+                        ) 
+                    }
+                </ScrollView>
             </View>
         </View>
     )
 }
 
-function ScanNotFound({ capturedImage, __startCamera }: any) {
+function ScanNotFound({ __startCamera }: any) {
     return (
-        <View className='flex-1 bg-white items-center space-y-5'>
+        <View className='flex-1 bg-[#ffffff] items-center space-y-5'>
             <View className='flex flex-row space-x-5'>
-
-                <TouchableOpacity onPress={__startCamera} className="w-32 mt-10 rounded bg-[#14274e] flex-row justify-center items-center h-10">
+                <TouchableOpacity onPress={__startCamera} className="w-36 mt-10 rounded bg-primary flex-row justify-center items-center h-10">
                     <View className='flex flex-row justify-center items-center space-x-2'>
-                        <Text className="text-white font-bold text-center">Scan Again</Text>
+                        <Text className="text-neutral-50 font-bold text-center">Scan Again</Text>
                         <Ionicons name="scan" size={18} color="white" />
                     </View>
                 </TouchableOpacity>
             </View>
-            {capturedImage && <Image source={{ uri: capturedImage?.uri }} className="w-screen h-[300px]" />}
-            <Text>
-                The Serial Number is not captured in the photo. Please Try again!
+            <Text className='text-primary'>
+                Serial Number not Captured!
             </Text>
         </View>
     )

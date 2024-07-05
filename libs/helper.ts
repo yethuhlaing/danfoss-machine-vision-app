@@ -81,14 +81,18 @@ export const extractData = (db: any, lastSerialNumber: any, setValue: any)=> {
 
     const getData = async () => {
         try {
-            const result = await db.getFirstAsync(`SELECT * FROM test_results WHERE serial_number = (?)`, lastSerialNumber[0]);
+            const result = await db.getFirstAsync(`SELECT * FROM test_results WHERE serial_number = (?)`, lastSerialNumber);
             if (result) {
                 setValue(result)
+                console.log(result)
             }
         } catch (error) {
             console.log(error)
         }
     }
+}
 
+export const capitalize = (word: string) =>{
+    return word[0].toUpperCase() + word.slice(1)
 
 }

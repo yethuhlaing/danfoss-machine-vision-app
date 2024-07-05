@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, Tabs } from 'expo-router';
 import { SQLiteProvider } from "expo-sqlite/next"
-import { ActivityIndicator, Text, View, Pressable } from 'react-native';
+import { ActivityIndicator, Text, View, Pressable, Image } from 'react-native';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system'
 import * as DocumentPicker from 'expo-document-picker';
@@ -54,17 +54,37 @@ export default function TabLayout() {
         <Suspense fallback={
             <View>
                 <ActivityIndicator size={"large"} />
-                <Text>Loading Database ...</Text>
+                <Text className='text-center'>Loading Database ...</Text>
             </View>
         }>
             <SQLiteProvider databaseName='motor_database.db.db' useSuspense>
                 <Tabs>
                     <Tabs.Screen
-                        name="home"
+                        name="home"                       
                         options={{
                             tabBarIcon: ({ color }) => (
                                 <TabBarIcon name="home" color={color} />
                             ),
+                            tabBarActiveTintColor: "#ED1C24",
+                            headerTitle: (props) => <Image source={require('../../assets/images/danfoss.png')} className='w-24 h-10' />,
+                            headerRight: () => (
+                                <Link href="(modals)/modal" asChild>
+                                    <Pressable>
+                                        {({ pressed }) => (
+                                            <FontAwesome
+                                                name="bars"
+                                                size={25}
+                                                style={{
+                                                    marginRight: 15,
+                                                    opacity: pressed ? 0.5 : 1,
+                                                    color: "#ED1C24",
+                                                }}
+                                            />
+                                        )}
+                                    </Pressable>
+                                </Link>
+                            ),
+                            
                         }}
                     />
                     <Tabs.Screen
@@ -72,6 +92,25 @@ export default function TabLayout() {
                         options={{
                             tabBarIcon: ({ color }) => (
                                 <TabBarIcon name="search" color={color} />
+                            ),
+                            tabBarActiveTintColor: "#ED1C24",
+                            headerTitle: (props) => <Image source={require('../../assets/images/danfoss.png')} className='w-24 h-10' />,
+                            headerRight: () => (
+                                <Link href="(modals)/modal" asChild>
+                                    <Pressable>
+                                        {({ pressed }) => (
+                                            <FontAwesome
+                                                name="bars"
+                                                size={25}
+                                                style={{
+                                                    marginRight: 15,
+                                                    opacity: pressed ? 0.5 : 1,
+                                                    color: "#ED1C24"
+                                                }}
+                                            />
+                                        )}
+                                    </Pressable>
+                                </Link>
                             ),
                         }}
                     />
@@ -81,8 +120,10 @@ export default function TabLayout() {
                             tabBarIcon: ({ color }) => (
                                 <TabBarIcon name="camera" color={color} />
                             ),
+                            headerTitle: (props) => <Image source={require('../../assets/images/danfoss.png')} className='w-24 h-10'/>,
+                            tabBarActiveTintColor: "#ED1C24",
                             headerRight: () => (
-                                <Link href="/modal" asChild>
+                                <Link href="(modals)/modal" asChild>
                                     <Pressable>
                                         {({ pressed }) => (
                                             <FontAwesome
@@ -91,6 +132,7 @@ export default function TabLayout() {
                                                 style={{
                                                     marginRight: 15,
                                                     opacity: pressed ? 0.5 : 1,
+                                                    color: "#ED1C24"
                                                 }}
                                             />
                                         )}
@@ -106,13 +148,24 @@ export default function TabLayout() {
                             tabBarIcon: ({ color }) => (
                                 <TabBarIcon name="folder" color={color} />
                             ),
-                        }}
-                    />
-                    <Tabs.Screen
-                        name="setting"
-                        options={{
-                            tabBarIcon: ({ color }) => (
-                                <TabBarIcon name="gear" color={color} />
+                            tabBarActiveTintColor: "#ED1C24",
+                            headerTitle: (props) => <Image source={require('../../assets/images/danfoss.png')} className='w-24 h-10' />,
+                            headerRight: () => (
+                                <Link href="(modals)/modal" asChild>
+                                    <Pressable>
+                                        {({ pressed }) => (
+                                            <FontAwesome
+                                                name="bars"
+                                                size={25}
+                                                style={{
+                                                    marginRight: 15,
+                                                    opacity: pressed ? 0.5 : 1,
+                                                    color: "#ED1C24"
+                                                }}
+                                            />
+                                        )}
+                                    </Pressable>
+                                </Link>
                             ),
                         }}
                     />

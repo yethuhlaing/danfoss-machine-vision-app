@@ -27,7 +27,7 @@ export default function Button({ label, theme, onPress }: ButtonProps) {
                         className="bg-blue-500 rounded-lg items-center justify-center p-3"
                             onPress={onPress}
                     >
-                        <Text className="text-white">{label}</Text>
+                        <Text className="text-neutral-50">{label}</Text>
                     </Pressable>
                 </View>
             )}
