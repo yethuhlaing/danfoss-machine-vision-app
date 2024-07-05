@@ -16,8 +16,8 @@ export async function analyzeImage(imageUri: string | undefined): Promise<Respon
                 error: "Please Select an image First"
             };
         }
-        const GOOGLE_VISION_API_KEY = 'AIzaSyCZgfWY5zCMAKyVbJF9O8cX29LT5qkEWLo';
-        const GOOGLE_VISION_API_URL = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`;
+        const api_key = process.env.GOOGLE_VISION_API_KEY
+        const GOOGLE_VISION_API_URL = `https://vision.googleapis.com/v1/images:annotate?key=${api_key}`
         const base64imageData = await FileSystem.readAsStringAsync(imageUri as string, {
             encoding: FileSystem.EncodingType.Base64
         });
