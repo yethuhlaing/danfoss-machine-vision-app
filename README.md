@@ -6,7 +6,7 @@ Danfoss manufactures electric machines and power electronic converters. Each uni
 Currently, there is no automated or user-friendly way to access the EoL test data of a machine based on its serial number. This project aims to solve this problem by developing a human-machine interface (HMI) that allows users to easily access and visualize the test data.
 
 ## Solution
-The proposed solution is to implement an HMI in the form of a smartphone app using React Native with Expo. The app will utilize the camera to read the rating plate or read an image file to extract the serial number using Google Vision. Once the serial number is obtained, the app will fetch the corresponding data from the database and display it to the user.
+The React Native app using Expo that serves as a Human-Machine Interface (HMI) for extracting and displaying product information based on serial numbers. The app will utilize the device's camera or allow image uploads to capture rating plates, and then employ Google Vision's OCR technology to extract the serial number. Once the serial number is obtained, the app will query a backend database to retrieve and display the relevant data to the user, providing a seamless and intuitive way to access detailed product information.
 
 ![image](https://github.com/yethuhlaing/danfoss-machine-vision-app/assets/112906488/25f355e2-3e33-4da1-b369-700aaffa0520)
 ![image](https://github.com/yethuhlaing/danfoss-machine-vision-app/assets/112906488/5bce15d7-ed37-476b-8293-8f6669ba7c06)
