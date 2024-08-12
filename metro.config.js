@@ -4,6 +4,6 @@ const { getDefaultConfig } = require('expo/metro-config');
 /** @type {import('expo/metro-config').MetroConfig} */
 const defaultConfig = getDefaultConfig(__dirname);
 
-defaultConfig.resolver.assetExts.push('db')
+defaultConfig.resolver.assetExts.push('db', 'ico')
 
 module.exports = defaultConfig;

@@ -1,8 +1,6 @@
-import TextRecognition from 'react-native-text-recognition';
 import axios from 'axios'
 import * as FileSystem from 'expo-file-system';
-import { useSQLiteContext } from 'expo-sqlite';
-
+import Environment from "../config/environment";
 
 type ResponseType =
     | { success: false; error: string | undefined }
@@ -16,8 +14,16 @@ export async function analyzeImage(imageUri: string | undefined): Promise<Respon
                 error: "Please Select an image First"
             };
         }
-        const api_key = process.env.GOOGLE_VISION_API_KEY
+        const api_key = Environment['GOOGLE_VISION_API_KEY']
         const GOOGLE_VISION_API_URL = `https://vision.googleapis.com/v1/images:annotate?key=${api_key}`
+        console.log(GOOGLE_VISION_API_URL)
+        if (!api_key) {
+            console.log("H")
+            return {
+                success: false,
+                error: "API Key Not Found!"
+            }
+        }
         const base64imageData = await FileSystem.readAsStringAsync(imageUri as string, {
             encoding: FileSystem.EncodingType.Base64
         });
@@ -41,7 +47,6 @@ export async function analyzeImage(imageUri: string | undefined): Promise<Respon
                 }
             ]
         };
-
         const apiResponse = await axios.post(GOOGLE_VISION_API_URL, requestData);
 
         if (apiResponse.data && apiResponse.data.responses && apiResponse.data.responses.length > 0) {
@@ -50,12 +55,14 @@ export async function analyzeImage(imageUri: string | undefined): Promise<Respon
                 data: apiResponse.data.responses[0].fullTextAnnotation.text
             }
         } else {
+            console.log("SOmething")
             return {
                 success: false,
                 error: "No response from Google Vision API"
             }
         }
     } catch (error: any) {
+        console.log(error.message)
         return {
             success: false,
             error: error?.message

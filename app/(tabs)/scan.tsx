@@ -74,20 +74,27 @@ export default function ScanPage() {
         const response = await analyzeImage(capturedImage?.uri)
         if (response.success) {
             setTextRecognition(response.data)
-            const OCRresult = extractLastSerialNumber(response.data);
-            console.log(response.data)
-            if (OCRresult.length == 0) {
-                console.log("Try to capture again!")
-                setStartCamera(false)
-            } else {
-                setLasterialNumber(OCRresult)
-                console.log('Serial Number:', lastSerialNumber);
-                console.log('Last Serial Number:', lastSerialNumber)
-                setStartCamera(false)
+            if (response.data) {
+                const OCRresult = extractLastSerialNumber(response.data);
+                console.log(OCRresult)
+                console.log(response.data)
+                if (OCRresult.length == 0) {
+                    console.log("Try to capture again!")
+                    setStartCamera(false)
+                } else {
+                    setLasterialNumber(OCRresult)
+                    console.log('Serial Number:', lastSerialNumber);
+                    console.log('Last Serial Number:', lastSerialNumber)
+                    setStartCamera(false)
+                } 
+            } else{
+                console.log("Response Error")
             }
+
         }
     }
     const __retakePicture = () => {
+        console.log("Retake")
         setPreviewVisible(false)
         __startCamera()
     }
@@ -137,6 +144,7 @@ export default function ScanPage() {
 
 
 const CameraPreview = ({ photo, retakePicture, choosePicture }: any) => {
+    console.log("HEllo")
     return (
         <View className="bg-transparent flex-1 w-full h-full">
             <ImageBackground source={{ uri: photo && photo.uri }} className="flex-1">
@@ -151,10 +159,9 @@ const CameraPreview = ({ photo, retakePicture, choosePicture }: any) => {
                             </View>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={choosePicture} className="flex-1 h-10 items-center rounded bg-primary justify-center">
-
                             <View className='flex flex-row justify-center items-center space-x-2'>
                                 <Text className="text-neutral-50 text-lg">
-                                     Choose
+                                    Choose
                                 </Text>
                                 <Feather name="arrow-right-circle" size={24} color="white" />
                             </View>

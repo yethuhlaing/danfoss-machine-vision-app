@@ -68,7 +68,7 @@ export default function TabLayout() {
                             tabBarActiveTintColor: "#ED1C24",
                             headerTitle: (props) => <Image source={require('../../assets/images/danfoss.png')} className='w-24 h-10' />,
                             headerRight: () => (
-                                <Link href="(modals)/modal" asChild>
+                                <Link href="/(modals)/modal" asChild>
                                     <Pressable>
                                         {({ pressed }) => (
                                             <FontAwesome
@@ -96,7 +96,7 @@ export default function TabLayout() {
                             tabBarActiveTintColor: "#ED1C24",
                             headerTitle: (props) => <Image source={require('../../assets/images/danfoss.png')} className='w-24 h-10' />,
                             headerRight: () => (
-                                <Link href="(modals)/modal" asChild>
+                                <Link href="/(modals)/modal" asChild>
                                     <Pressable>
                                         {({ pressed }) => (
                                             <FontAwesome
@@ -123,7 +123,7 @@ export default function TabLayout() {
                             headerTitle: (props) => <Image source={require('../../assets/images/danfoss.png')} className='w-24 h-10'/>,
                             tabBarActiveTintColor: "#ED1C24",
                             headerRight: () => (
-                                <Link href="(modals)/modal" asChild>
+                                <Link href="/(modals)/modal" asChild>
                                     <Pressable>
                                         {({ pressed }) => (
                                             <FontAwesome
@@ -151,7 +151,7 @@ export default function TabLayout() {
                             tabBarActiveTintColor: "#ED1C24",
                             headerTitle: (props) => <Image source={require('../../assets/images/danfoss.png')} className='w-24 h-10' />,
                             headerRight: () => (
-                                <Link href="(modals)/modal" asChild>
+                                <Link href="/(modals)/modal" asChild>
                                     <Pressable>
                                         {({ pressed }) => (
                                             <FontAwesome
