@@ -60,6 +60,14 @@ function RootLayoutNav() {
                             headerTitle: (props) => <Image source={require('../assets/images/danfoss.png')} className='w-24 h-10' />,
                         }}
                     />
+                    <Stack.Screen
+                        name="(modals)/manual" 
+                        options={{
+                            presentation: 'card',
+                            headerBackTitle: 'Back',
+                            headerTitle: "",
+                        }}              
+                    />
                 </Stack>
             </ThemeProvider>
         </RootSiblingParent>
