@@ -1,6 +1,7 @@
 import axios from 'axios'
 import * as FileSystem from 'expo-file-system';
 import Environment from "../config/environment";
+import Toast from 'react-native-root-toast';
 
 type ResponseType =
     | { success: false; error: string | undefined }
@@ -91,8 +92,15 @@ export const extractData = (db: any, lastSerialNumber: any, setValue: any)=> {
                 setValue(result)
                 console.log(result)
             }
-        } catch (error) {
-            console.log(error)
+        } catch (error: any) {
+            Toast.show(error.message, {
+                duration: Toast.durations.LONG,
+                position: Toast.positions.TOP,
+                shadow: true,
+                animation: true,
+                hideOnPress: true,
+                delay: 0,
+            });
         }
     }
 }

@@ -7,6 +7,7 @@ import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system'
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
+import { DEFAULTDATABASE } from 'constants/constant';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -33,23 +34,23 @@ const loadDatabase = async () => {
 };
 
 export default function TabLayout() {
-    const [dbLoaded, setDbLoaded] = useState(false)
+    // const [dbLoaded, setDbLoaded] = useState(false)
 
 
-    useEffect(() => {
-        loadDatabase()
-            .then(() => setDbLoaded(true))
-            .catch((e) => console.error(e))
-    }, [])
+    // useEffect(() => {
+    //     loadDatabase()
+    //         .then(() => setDbLoaded(true))
+    //         .catch((e) => console.error(e))
+    // }, [])
 
-    if (!dbLoaded) {
-        return (
-            <View>
-                <ActivityIndicator size={"large"} />
-                <Text>Loading Database ...</Text>
-            </View>
-        )
-    }
+    // if (!dbLoaded) {
+    //     return (
+    //         <View>
+    //             <ActivityIndicator size={"large"} />
+    //             <Text>Loading Database ...</Text>
+    //         </View>
+    //     )
+    // }
     return (
         <Suspense fallback={
             <View>
@@ -57,7 +58,7 @@ export default function TabLayout() {
                 <Text className='text-center'>Loading Database ...</Text>
             </View>
         }>
-            <SQLiteProvider databaseName='motor_database.db.db' useSuspense>
+            <SQLiteProvider databaseName={`${DEFAULTDATABASE}.db`} useSuspense>
                 <Tabs>
                     <Tabs.Screen
                         name="home"                       

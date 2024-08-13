@@ -1,3 +1,4 @@
+export const DEFAULTDATABASE = 'moto_database.db'
 export const keyIconMap: { [key: string]: string } = {
     bearing_temperatures: 'thermometer-half',
     d_side_vertical_horizontal_axial_accelaration_ptp: 'arrows-alt',
