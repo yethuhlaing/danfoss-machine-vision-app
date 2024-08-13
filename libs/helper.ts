@@ -18,7 +18,6 @@ export async function analyzeImage(imageUri: string | undefined): Promise<Respon
         const GOOGLE_VISION_API_URL = `https://vision.googleapis.com/v1/images:annotate?key=${api_key}`
         console.log(GOOGLE_VISION_API_URL)
         if (!api_key) {
-            console.log("H")
             return {
                 success: false,
                 error: "API Key Not Found!"
@@ -55,7 +54,6 @@ export async function analyzeImage(imageUri: string | undefined): Promise<Respon
                 data: apiResponse.data.responses[0].fullTextAnnotation.text
             }
         } else {
-            console.log("SOmething")
             return {
                 success: false,
                 error: "No response from Google Vision API"

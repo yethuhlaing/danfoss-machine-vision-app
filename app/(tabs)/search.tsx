@@ -5,6 +5,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { capitalize, extractData } from 'libs/helper';
 import React, { useState } from 'react'
 import { TextInput, TouchableOpacity, View, Text, ScrollView } from 'react-native'
+import Toast from 'react-native-root-toast';
 
 
 export default function search() {
@@ -14,6 +15,16 @@ export default function search() {
     const __searchSerialNumber = async () => {
         setGeneralResult({})
         extractData(db, value, setGeneralResult)
+        if (Object.keys(generalResult).length > 0) {
+            Toast.show('No data available', {
+                duration: Toast.durations.LONG,
+                position: Toast.positions.TOP,
+                shadow: true,
+                animation: true,
+                hideOnPress: true,
+                delay: 0,
+            });
+        }
     }
     return (
         <View className='flex-1 bg-[#ffffff] items-center p-4'>

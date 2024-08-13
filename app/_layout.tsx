@@ -11,6 +11,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
+import { RootSiblingParent } from 'react-native-root-siblings';
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -47,18 +48,22 @@ export default function RootLayout() {
 // Root Navigation Component
 function RootLayoutNav() {
     return (
-        <ThemeProvider value={DefaultTheme}>
-            <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen
-                    name="(modals)/modal"
-                    options={{
-                        presentation: 'card',
-                        headerBackTitle: 'Scan',
-                        headerTitle: (props) => <Image source={require('../assets/images/danfoss.png')} className='w-24 h-10' />,
-                    }}
-                />
-            </Stack>
-        </ThemeProvider>
+        <RootSiblingParent> 
+            <ThemeProvider value={DefaultTheme}>
+                <Stack>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen
+                        name="(modals)/modal"
+                        options={{
+                            presentation: 'card',
+                            headerBackTitle: 'Scan',
+                            headerTitle: (props) => <Image source={require('../assets/images/danfoss.png')} className='w-24 h-10' />,
+                        }}
+                    />
+                </Stack>
+            </ThemeProvider>
+        </RootSiblingParent>
+
+
     );
 }

@@ -8,13 +8,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Feather, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { keyIconMap } from 'constants/constant';
+import Toast from 'react-native-root-toast';
 
 export default function ScanPage() {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const cameraRef = useRef<CameraView>(null);
     const [capturedImage, setCapturedImage] = useState<CameraCapturedPicture | undefined >(undefined)
-    const [textRecognition, setTextRecognition] = useState<string | null>(null)
     const [lastSerialNumber, setLasterialNumber] = useState<string[]>([])
 
     const [startCamera, setStartCamera] = useState(true)
@@ -72,25 +72,32 @@ export default function ScanPage() {
     }
     const __choosePicture = async () => { 
         const response = await analyzeImage(capturedImage?.uri)
-        if (response.success) {
-            setTextRecognition(response.data)
-            if (response.data) {
-                const OCRresult = extractLastSerialNumber(response.data);
-                console.log(OCRresult)
-                console.log(response.data)
-                if (OCRresult.length == 0) {
-                    console.log("Try to capture again!")
-                    setStartCamera(false)
-                } else {
-                    setLasterialNumber(OCRresult)
-                    console.log('Serial Number:', lastSerialNumber);
-                    console.log('Last Serial Number:', lastSerialNumber)
-                    setStartCamera(false)
-                } 
-            } else{
-                console.log("Response Error")
-            }
+        if (response.success == true) {
+            setStartCamera(false)
 
+            const OCRresult = extractLastSerialNumber(response.data);
+            console.log(OCRresult)
+            if (OCRresult.length == 0) {
+                Toast.show("Try to capture again!", {
+                    duration: Toast.durations.LONG,
+                    position: Toast.positions.TOP,
+                    shadow: true,
+                    animation: true,
+                    hideOnPress: true,
+                    delay: 0,
+                });
+            } else {
+                setLasterialNumber(OCRresult)
+            } 
+        } else {
+            Toast.show(response?.error as string, {
+                duration: Toast.durations.LONG,
+                position: Toast.positions.TOP,
+                shadow: true,
+                animation: true,
+                hideOnPress: true,
+                delay: 0,
+            });
         }
     }
     const __retakePicture = () => {
@@ -144,7 +151,6 @@ export default function ScanPage() {
 
 
 const CameraPreview = ({ photo, retakePicture, choosePicture }: any) => {
-    console.log("HEllo")
     return (
         <View className="bg-transparent flex-1 w-full h-full">
             <ImageBackground source={{ uri: photo && photo.uri }} className="flex-1">
@@ -207,11 +213,12 @@ const CameraScreen = ({ __handleFlashMode, __switchCamera, __exitCamera, __takeP
 
 function ScanFound({ lastSerialNumber, __startCamera }: any) {
     
-    const [generalResult, setGeneralResult] = useState({})
-    const db = useSQLiteContext()
+    const [generalResult, setGeneralResult] = useState(undefined)
+    const db = useSQLiteContext()  
 
     const __searchSerialNumber = async () => {
         extractData(db, lastSerialNumber, setGeneralResult)
+        console.log(generalResult)
     }
     return (
         <View className="bg-[#ffffff] items-center space-y-5 p-4">
@@ -234,7 +241,7 @@ function ScanFound({ lastSerialNumber, __startCamera }: any) {
             </View>
             <View>
                 <Text className="text-center text-[#15803d] p-3">
-                    Last serial Number - {lastSerialNumber}
+                    Last Serial Number - {lastSerialNumber}
                 </Text>
             
   
@@ -253,7 +260,7 @@ function ScanFound({ lastSerialNumber, __startCamera }: any) {
                                 </View>
                             ))
                         ) 
-                    }
+                    } 
                 </ScrollView>
             </View>
         </View>

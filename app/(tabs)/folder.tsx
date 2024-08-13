@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, ScrollView, ImageSourcePropType } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ScrollView, ImageSourcePropType, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 import { analyzeImage, capitalize, extractData, extractLastSerialNumber } from '../../libs/helper';
@@ -6,17 +6,18 @@ import Card from 'components/Card';
 import { useSQLiteContext } from 'expo-sqlite';
 import { FontAwesome } from '@expo/vector-icons';
 import { keyIconMap } from 'constants/constant';
+import Toast from 'react-native-root-toast';
 
 export default function folder() {
     const [capturedImage, setCapturedImage] = useState< undefined | ImagePicker.ImagePickerAsset>(undefined)
-    const [textRecognition, setTextRecognition] = useState<string | null>(null)
     const [lastSerialNumber, setLasterialNumber] = useState<string[]>([])
     const [generalResult, setGeneralResult] = useState({})
-    const [ error , setError ] = useState('')
+    const [loading, setLoading] = useState(false);
     const db = useSQLiteContext()
 
     const __pickImage = async () => {
         try {
+            setLoading(true);
             // No permissions request is necessary for launching the image library
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -30,19 +31,51 @@ export default function folder() {
 
                 const response = await analyzeImage(result.assets[0].uri)
                 if (response.success) {
-                    setTextRecognition(response.data)
                     const serialNumberOutput = extractLastSerialNumber(response.data);
                     console.log(serialNumberOutput)
                     if (serialNumberOutput.length == 0) {
-                        setError("Serial number not Captured!")
+                        Toast.show("Serial number not Captured!", {
+                            duration: Toast.durations.LONG,
+                            position: Toast.positions.TOP,
+                            shadow: true,
+                            animation: true,
+                            hideOnPress: true,
+                            delay: 0,
+                        });
                     } else {
                         setLasterialNumber(serialNumberOutput)
-                        setError("")
                     }
+                } else{
+                    Toast.show(response?.error as string, {
+                        duration: Toast.durations.LONG,
+                        position: Toast.positions.TOP,
+                        shadow: true,
+                        animation: true,
+                        hideOnPress: true,
+                        delay: 0,
+                    });
                 }
+            }else {
+                Toast.show('Image picking was canceled', {
+                    duration: Toast.durations.LONG,
+                    position: Toast.positions.TOP,
+                    shadow: true,
+                    animation: true,
+                    hideOnPress: true,
+                    delay: 0,
+                });
             }
-        } catch (error) {
-            console.log(error)
+        } catch (error: any) {
+            Toast.show(error?.message, {
+                duration: Toast.durations.LONG,
+                position: Toast.positions.TOP,
+                shadow: true,
+                animation: true,
+                hideOnPress: true,
+                delay: 0,
+            });
+        } finally {
+            setLoading(false);
         }
 
     };
@@ -62,7 +95,7 @@ export default function folder() {
                     </View>
                 </TouchableOpacity>
                 {
-                    !error && lastSerialNumber?.length > 0 && (
+                    lastSerialNumber?.length > 0 && (
                         <TouchableOpacity onPress={__searchSerialNumber} className="flex-1 rounded bg-primary flex-row justify-center items-center h-10">
                             <View className='flex flex-row justify-center items-center space-x-2'>
                                 <Text className="text-neutral-50 font-bold text-center">
@@ -75,11 +108,9 @@ export default function folder() {
                 }
             </View>
             {
-                error ? (
-                    <Text className="text-center text-primary p-3">
-                        {error}
-                    </Text>
-                ) : (
+                loading ? (
+                    <ActivityIndicator size="large" color="#2f95dc" />
+                ): (
                     <View>
                         {
                             lastSerialNumber?.length > 0 &&
