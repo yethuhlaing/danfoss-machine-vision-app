@@ -8,8 +8,8 @@ Currently, there is no automated or user-friendly way to access the EoL test dat
 ## Solution
 The React Native app using Expo that serves as a Human-Machine Interface (HMI) for extracting and displaying product information based on serial numbers. The app will utilize the device's camera or allow image uploads to capture rating plates, and then employ Google Vision's OCR technology to extract the serial number. Once the serial number is obtained, the app will query a backend database to retrieve and display the relevant data to the user, providing a seamless and intuitive way to access detailed product information.
 
-![image](https://github.com/yethuhlaing/danfoss-machine-vision-app/assets/112906488/25f355e2-3e33-4da1-b369-700aaffa0520)
-![image](https://github.com/yethuhlaing/danfoss-machine-vision-app/assets/112906488/5bce15d7-ed37-476b-8293-8f6669ba7c06)
+![2](https://github.com/user-attachments/assets/1447c048-da19-4ef7-82d4-40ff7349b958)
+![3](https://github.com/user-attachments/assets/2b454570-3a65-41f9-87bb-c8841eed2c70)
 
 
 ## Project Limitations and Properties
@@ -40,9 +40,48 @@ The React Native app using Expo that serves as a Human-Machine Interface (HMI) f
 - Use the camera to scan the rating plate or upload an image file containing the rating plate.
 - The app will extract the serial number, query the database, and display the relevant EoL test data.
 
-# License
-Distributed under the MIT License. See `LICENSE` for more information.
 
+# Configuration
+- Create this config/environment.js folder route in the app folder.
+- In environment.js file, use the following setup and replace your Google Vision API key.
+```
+import Constants from 'expo-constants';
+
+var environments = {
+    staging: {
+        GOOGLE_VISION_API_KEY: 'Replace your Google Vision API key'
+    },
+    production: {
+        // Warning: This file still gets included in your native binary and is not a secure way to store secrets if you build for the app stores. Details: https://github.com/expo/expo/issues/83
+    }
+};
+function getReleaseChannel() {
+    const releaseChannel = Constants?.releaseChannel;
+    if (releaseChannel === undefined) {
+        return "staging";
+    } else if (releaseChannel === "staging") {
+        return "staging";
+    } else {
+        return "staging";
+    }
+}
+function getEnvironment(env) {
+    console.log("Release Channel: ", getReleaseChannel());
+    return environments[env];
+}
+var Environment = getEnvironment(getReleaseChannel());
+export default Environment;
+```
+- Import your database in the assets/database/ folder.
+- Change your Database name in the constants/constant.ts file.
+```
+export const DEFAULTDATABASE = 'xxxxxxxx.db'
+```
+# Development
+- To run the application
+```
+npm run start
+```
 # Acknowledgments
 - Danfoss Team for providing the project background and requirements.
 - Open-source libraries and tools that facilitated the development of this project.
